@@ -70,14 +70,14 @@
     {
       "type": "hysteria2",
       "tag": "🇻🇳-MT-Hys",
-      "server": "103.82.193.24",
-      "server_port": 8443,
+      "server": "ip",
+      "server_port": port,
       "up_mbps": 200,
       "down_mbps": 200,
-      "password": "khosihuythao-com",
+      "password": "random",
       "tls": {
         "enabled": true,
-        "server_name": "24.khosihuythao.com",
+        "server_name": "domain",
         "alpn": "h3"
       }
     },
