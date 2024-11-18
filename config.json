@@ -1,0 +1,115 @@
+{
+  "log": {
+    "level": "info",
+    "timestamp": true
+  },
+  "dns": {
+    "servers": [
+      {
+        "tag": "dns-DOH",
+        "address": "https://1.1.1.1/dns-query",
+        "strategy": "ipv4_only",
+        "detour": "direct"
+      },
+      {
+        "tag": "dns-block",
+        "address": "rcode://success"
+      }
+    ],
+    "rules": [
+      {
+        "outbound": "any",
+        "server": "dns-DOH"
+      },
+      {
+        "rule_set": "AdBlock",
+        "server": "dns-block"
+      }
+    ],
+    "final": "dns-DOH",
+    "independent_cache": true
+  },
+  "inbounds": [
+    {
+      "type": "hysteria2",
+      "listen": "::",
+      "listen_port": 8443,
+      "up_mbps": 200,
+      "down_mbps": 200,
+      "users": [
+        {
+          "password": "khosihuythao-com"
+        }
+      ],
+      "tls": {
+        "enabled": true,
+        "alpn": "h3",
+        "certificate_path": "/etc/ssl/private/fullchain.cer",
+        "key_path": "/etc/ssl/private/private.key"
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "direct",
+      "tag": "direct"
+    },
+    {
+      "type": "block",
+      "tag": "block"
+    },
+    {
+      "type": "dns",
+      "tag": "dns-out"
+    }
+  ],
+  "route": {
+    "rules": [
+      {
+        "type": "logical",
+        "mode": "or",
+        "rules": [
+          {
+            "protocol": "dns"
+          },
+          {
+            "port": 53
+          }
+        ],
+        "outbound": "dns-out"
+      },
+      {
+        "ip_is_private": true,
+        "outbound": "direct"
+      },
+      {
+        "rule_set": "AdBlock",
+        "outbound": "block"
+      },
+      {
+        "network": [
+          "udp",
+          "tcp"
+        ],
+        "outbound": "direct"
+      }
+    ],
+    "rule_set": [
+      {
+        "type": "remote",
+        "tag": "AdBlock",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/Thaomtam/Geosite-vn/rule-set/Geosite-vn.srs",
+        "download_detour": "direct"
+      }
+    ],
+    "final": "direct",
+    "auto_detect_interface": true
+  },
+  "experimental": {
+    "cache_file": {
+      "enabled": true,
+      "path": "cache.db"
+    }
+  }
+}
