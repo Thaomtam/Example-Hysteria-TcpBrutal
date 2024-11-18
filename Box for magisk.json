@@ -1,0 +1,156 @@
+{
+  "log": {
+    "level": "panic",
+    "output": "/data/adb/box/run/sing-box.log",
+    "timestamp": true
+  },
+  "dns": {
+    "servers": [
+      {
+        "tag": "dns-remote",
+        "address": "https://1.1.1.1/dns-query",
+        "address_resolver": "dns-direct"
+      },
+      {
+        "tag": "dns-direct",
+        "address": "1.1.1.1",
+        "address_resolver": "dns-local",
+        "detour": "direct"
+      },
+      {
+        "tag": "dns-local",
+        "address": "local",
+        "detour": "direct"
+      },
+      {
+        "tag": "dns-block",
+        "address": "rcode://refused"
+      }
+    ],
+    "rules": [
+      {
+        "outbound": "any",
+        "server": "dns-local"
+      },
+      {
+        "rule_set": "AdBlock🛑",
+        "server": "dns-block"
+      }
+    ],
+    "final": "dns-remote",
+    "strategy": "ipv4_only",
+    "independent_cache": true
+  },
+  "inbounds": [
+    {
+      "type": "tproxy",
+      "tag": "tproxy-in",
+      "listen": "::",
+      "listen_port": 9898,
+      "sniff": true
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "selector",
+      "tag": "🇻🇳",
+      "outbounds": [
+        "🇻🇳-MT-Hys"
+      ],
+      "default": "direct",
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "selector",
+      "tag": "Block🛑",
+      "outbounds": [
+        "block"
+      ]
+    },
+    {
+      "type": "hysteria2",
+      "tag": "🇻🇳-MT-Hys",
+      "server": "103.82.193.24",
+      "server_port": 8443,
+      "up_mbps": 200,
+      "down_mbps": 200,
+      "password": "khosihuythao-com",
+      "tls": {
+        "enabled": true,
+        "server_name": "24.khosihuythao.com",
+        "alpn": "h3"
+      }
+    },
+    {
+      "type": "dns",
+      "tag": "dns-out"
+    },
+    {
+      "type": "direct",
+      "tag": "direct"
+    },
+    {
+      "type": "block",
+      "tag": "block"
+    }
+  ],
+  "route": {
+    "rules": [
+      {
+        "type": "logical",
+        "mode": "or",
+        "rules": [
+          {
+            "protocol": "dns"
+          },
+          {
+            "port": 53
+          }
+        ],
+        "outbound": "dns-out"
+      },
+      {
+        "type": "logical",
+        "mode": "or",
+        "rules": [
+          {
+            "rule_set": "AdBlock🛑"
+          },
+          {
+            "ip_is_private": true
+          }
+        ],
+        "outbound": "Block🛑"
+      },
+      {
+        "network": [
+          "udp",
+          "tcp"
+        ],
+        "outbound": "🇻🇳"
+      }
+    ],
+    "rule_set": [
+      {
+        "type": "local",
+        "tag": "AdBlock🛑",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/Thaomtam/Geosite-vn/rule-set/Geosite-vn.srs",
+        "download_detour": "direct"
+      }
+    ],
+    "final": "🇻🇳",
+    "find_process": true,
+    "auto_detect_interface": false
+  },
+  "experimental": {
+    "cache_file": {
+      "enabled": true,
+      "path": "cache.db"
+    },
+    "clash_api": {
+      "external_controller": "0.0.0.0:9090",
+      "external_ui": "./dashboard"
+    }
+  }
+}
